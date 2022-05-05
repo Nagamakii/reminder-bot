@@ -1,31 +1,45 @@
-import asyncio
-from urllib import response
-from urllib.request import urlopen
-from aiohttp import request
 from discord.ext import commands
 from dotenv import load_dotenv
-import os
 import psycopg2
-import websockets
+import os
 
 load_dotenv()
 
-
-bot = commands.Bot(command_prefix='!', description="This is a test bot")
+bot = commands.Bot(command_prefix='!', description="This is a bot to remind me of things")
 token = os.getenv("TOKEN")
+db_token = os.getenv("DB_PASS")
 
+conn = None
+# read connection parameters
+print('Connecting to the PostgreSQL database...')
+conn = psycopg2.connect(user="db_user",
+                          password=db_token,
+                          host="192.168.4.59",
+                          port="5433",
+                          database="postgres")
+cur = conn.cursor()
+        
+@bot.event
+async def on_ready():
+    print("Bot is online!")
 
-
-# Command that parses the reminders
 @bot.command()
 async def remindme(ctx, arg):
     await ctx.send(f"I will remind you to {arg} when you get home!")
-    global x
-    x = arg
+    insert = (cur.execute(f""" INSERT INTO COMMANDS (ID, CONTENT) VALUES (1, '{arg}') """))
+    conn.commit()
 
-print('running websockets ws://192.168.4.21:8000')
-server = websockets.serve(response, '192.168.4.21', '8000')
-asyncio.get_event_loop().run_until_complete(server)
+@bot.command()
+async def home(ctx):
+    try:
+        select = (cur.execute(""" SELECT content FROM commands"""))
+        await ctx.send(f"Welcome home {ctx.author.mention}! Don't forget to {select}")
+        conn.commit()
+    finally:
+        rm = (cur.execute(""" TRUNCATE commands """))
+        (rm)
+        conn.commit()
+        conn.close()
 
 if __name__ == '__main__':
     bot.run(token)
