@@ -27,10 +27,13 @@ async def remindme(ctx, arg):
 def webhook():
     print(request.method)
     if request.method == 'POST':
-        print(request.json)
-        formatted_list = (', '.join(reminders))
-        Webhook.from_url(wh, adapter=RequestsWebhookAdapter()).send(f"Remember to {formatted_list} <@383762688355991554>!", username='Reminder-bot')
-        return 'Home!', 200
+        try:
+            print(request.json)
+            formatted_list = (', '.join(reminders))
+            Webhook.from_url(wh, adapter=RequestsWebhookAdapter()).send(f"Remember to {formatted_list} <@383762688355991554>!", username='Reminder-bot')
+            return 'Home!', 200
+        finally:
+            reminders.clear()
     else:
         abort(400)    
 
