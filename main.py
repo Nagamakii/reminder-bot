@@ -29,7 +29,7 @@ async def remindme(ctx, arg):
     reminders.append(arg)
 
 # Start the flask webhook, when the POST request comes in it formats the list, then sends it in a webhook, prob need to figure out how to send it from the same bot lol
-@app.route('/webhook', methods=['POST'])
+@app.route('/', methods=['POST'])
 def webhook():
     print(request.method)
     if request.method == 'POST':
@@ -37,7 +37,7 @@ def webhook():
             print(request.json)
             formatted_list = (', '.join(reminders))
             Webhook.from_url(wh, adapter=RequestsWebhookAdapter()).send(f"Remember to {formatted_list} <@383762688355991554>!", username='Reminder-bot')
-            return 200
+            return 'Home!', 200
         # Clear the list after the message is sent
         finally:
             reminders.clear()
@@ -45,8 +45,8 @@ def webhook():
     else:
         abort(400)
 
-# Run the webhook server in a seperate thread so not to conflict with the discord bot
-threading.Thread(target=lambda: app.run(host="0.0.0.0")).start()
 
+# Run the webhook server in a seperate thread so not to conflict with the discord bot
 if __name__ == '__main__':
+    threading.Thread(target=lambda: app.run("0.0.0.0")).start()
     bot.run(token)
