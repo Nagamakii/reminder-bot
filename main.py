@@ -1,6 +1,5 @@
-# TODO: Figure out how to send reminders from the same bot and deploy all of this in a docker container
-
-from discord import Webhook, RequestsWebhookAdapter
+import discord
+from discord import SyncWebhook
 from flask import Flask, request, abort
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -10,10 +9,14 @@ import os
 load_dotenv()
 app = Flask(__name__)
 
+intents = discord.Intents.default()
+intents.message_content = True
+
 # Start bot and get env variables, command prefix is the char before the message
-bot = commands.Bot(command_prefix='!', description="This is a bot to remind me of things when I get home")
+bot = commands.Bot(command_prefix='!', intents=intents)
 wh = os.getenv('WEBHOOK')
 token = os.getenv("TOKEN")
+
 
 # msg for bot online
 @bot.event
@@ -28,6 +31,12 @@ async def remindme(ctx, arg):
     print(f"New reminder!: {arg}")
     reminders.append(arg)
 
+# lists all the current reminders
+@bot.command()
+async def list(ctx):
+    readable_list = "\n".join(reminders)
+    await ctx.send(f"Current reminders are: \n{readable_list}")
+
 # Start the flask webhook, when the POST request comes in it formats the list, then sends it in a webhook, prob need to figure out how to send it from the same bot lol
 @app.route('/', methods=['POST'])
 def webhook():
@@ -36,7 +45,7 @@ def webhook():
         try:
             print(request.json)
             formatted_list = (', '.join(reminders))
-            Webhook.from_url(wh, adapter=RequestsWebhookAdapter()).send(f"Remember to {formatted_list} <@383762688355991554>!", username='Reminder-bot')
+            SyncWebhook.from_url(wh).send(f"Remember to {formatted_list} <@383762688355991554>!", username='Reminder-bot')
             return 'Home!', 200
         # Clear the list after the message is sent
         finally:
