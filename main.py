@@ -17,7 +17,6 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 wh = os.getenv('WEBHOOK')
 token = os.getenv("TOKEN")
 
-
 # msg for bot online
 @bot.event
 async def on_ready():
@@ -27,33 +26,45 @@ async def on_ready():
 reminders = []
 @bot.command()
 async def remindme(ctx, arg):
+    
     await ctx.send(f"I will remind you to {arg} when you get home!")
+    
     print(f"New reminder!: {arg}")
+    
     reminders.append(arg)
 
 # lists all the current reminders
 @bot.command()
 async def list(ctx):
+    
     readable_list = "\n".join(reminders)
+    
     await ctx.send(f"Current reminders are: \n{readable_list}")
 
 # Start the flask webhook, when the POST request comes in it formats the list, then sends it in a webhook, prob need to figure out how to send it from the same bot lol
 @app.route('/', methods=['POST'])
 def webhook():
+
     print(request.method)
+
     if request.method == 'POST':
         try:
+            
             print(request.json)
+            
             formatted_list = (', '.join(reminders))
+            
             SyncWebhook.from_url(wh).send(f"Remember to {formatted_list} <@383762688355991554>!", username='Reminder-bot')
+            
             return 'Home!', 200
+
         # Clear the list after the message is sent
         finally:
             reminders.clear()
+
     # Abort the request if it's not POST
     else:
         abort(400)
-
 
 # Run the webhook server in a seperate thread so not to conflict with the discord bot
 if __name__ == '__main__':
