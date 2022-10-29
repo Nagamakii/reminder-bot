@@ -14,7 +14,7 @@ intents.message_content = True
 
 # Start bot and get env variables, command prefix is the char before the message
 bot = commands.Bot(command_prefix='!', intents=intents)
-wh = os.getenv('WEBHOOK')
+url = "https://discord.com/api/webhooks/1035442819898281985/kwS0X1dBImQ_9b7GO-Bq2mYbBJvQ1P-LbM02hrjl3y1nBI-LUD-9-lh3RVOs3YazFFcA"
 token = os.getenv("TOKEN")
 
 # msg for bot online
@@ -52,9 +52,10 @@ def webhook():
             
             print(request.json)
             
-            formatted_list = (', '.join(reminders))
+            formatted_list = str(', '.join(reminders))
             
-            SyncWebhook.from_url(wh).send(f"Remember to {formatted_list} <@383762688355991554>!", username='Reminder-bot')
+            webhook = SyncWebhook.from_url(url=url)
+            webhook.send(f"Don't forget to {formatted_list}!")
             
             return 'Home!', 200
 
