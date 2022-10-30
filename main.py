@@ -14,7 +14,7 @@ intents.message_content = True
 
 # Start bot and get env variables, command prefix is the char before the message
 bot = commands.Bot(command_prefix='!', intents=intents)
-url = "https://discord.com/api/webhooks/1035442819898281985/kwS0X1dBImQ_9b7GO-Bq2mYbBJvQ1P-LbM02hrjl3y1nBI-LUD-9-lh3RVOs3YazFFcA"
+url = os.getenv("WEBHOOK")
 token = os.getenv("TOKEN")
 
 # msg for bot online
